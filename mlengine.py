@@ -7,7 +7,7 @@ PIPELINE_FILEPATH = "preprocessing/joblib_dumps/ids_pipeline.joblib"
 MODEL_FILEPATH = "ml_models/svm_clf_model.joblib"
 
 class MLEngine(object):
-    def __init__(self, model_filename=MODEL_FILEPATH):
+    def __init__(self, model_filename=MODEL_FILEPATH, pipeline_filename=PIPELINE_FILEPATH):
         # Load the ml model (svm & lof)
         self.mlmodel = joblib.load(model_filename)
 
@@ -18,4 +18,6 @@ class MLEngine(object):
     def predict(self, data):
         prep_data = self.ids_pipeline.transform(data)
         return self.mlmodel.predict(prep_data)
+
+    def 
         

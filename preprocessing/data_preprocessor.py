@@ -1,11 +1,11 @@
-from sklearn.preprocessing import StandardScaler, LabelEncoder, MinMaxScaler
+from sklearn.preprocessing import LabelEncoder
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals import joblib
 
 # Data Preprocessing
-
 class AttributesRemover(BaseEstimator, TransformerMixin):
-    def __init__(self, columns=['Flow Bytes/s',' Flow Packets/s']):
+    def __init__(self, columns=['Flow ID','Src IP','Src Port','Dst IP','Protocol','Timestamp',
+                                'Flow Byts/s','Flow Pkts/s', 'Label']):
         self.columns=columns
     def fit(self, X, y=None):
         return self # nothing else to do
