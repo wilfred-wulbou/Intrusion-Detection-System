@@ -18,6 +18,4 @@ class MLEngine(object):
     def predict(self, data):
         prep_data = self.ids_pipeline.transform(data)
         return self.mlmodel.predict(prep_data)
-
-    def 
         
