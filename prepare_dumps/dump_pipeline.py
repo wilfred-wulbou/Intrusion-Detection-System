@@ -1,6 +1,7 @@
 import os
 import pandas as pd
-from sklearn.externals import joblib
+# from sklearn.externals import joblib
+import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
@@ -11,7 +12,7 @@ from preprocessing import constants
 ISCX2017_PATH = "D:\\CIC-IDS-2017\\TrafficLabelling"
 CSVFILENAME = "Monday-WorkingHours.pcap_ISCX.csv"
 
-columns = constants.columns
+columns = constants.COLUMNS
 
 ## Load the IDS Monday Data data
 def load_iscx_data(iscx2017_path=ISCX2017_PATH, csvfilename=CSVFILENAME ):

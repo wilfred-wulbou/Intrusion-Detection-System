@@ -1,5 +1,6 @@
 # Load saved svm_clf model
-from sklearn.externals import joblib
+# from sklearn.externals import joblib
+import joblib
 from sklearn.svm import OneClassSVM
 from preprocessing.data_preprocessor import IDSPipelineLoader, AttributesRemover
 

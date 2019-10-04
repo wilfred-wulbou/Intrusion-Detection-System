@@ -1,5 +1,13 @@
+from enum import Enum
+
+# PredictLabel() is an enum for BENIGN or ANOMALY prediction output of 
+# ML models doing novelty detection.
+class PredictLabel(Enum):
+       BENIGN = 1
+       ANOMALY = -1
+
 # Column names for CICFlowMeter generated datasets.
-columns = ['Flow ID', 'Src IP', 'Src Port', 'Dst IP', 'Dst Port', 'Protocol',
+COLUMNS = ['Flow ID', 'Src IP', 'Src Port', 'Dst IP', 'Dst Port', 'Protocol',
        'Timestamp', 'Flow Duration', 'Tot Fwd Pkts', 'Tot Bwd Pkts',
        'TotLen Fwd Pkts', 'TotLen Bwd Pkts', 'Fwd Pkt Len Max',
        'Fwd Pkt Len Min', 'Fwd Pkt Len Mean', 'Fwd Pkt Len Std',

@@ -1,6 +1,7 @@
 from sklearn.preprocessing import LabelEncoder
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.externals import joblib
+# from sklearn.externals import joblib
+import joblib
 
 # Data Preprocessing
 class AttributesRemover(BaseEstimator, TransformerMixin):

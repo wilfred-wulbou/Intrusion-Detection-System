@@ -2,3 +2,5 @@
 *.bak
 *settings.json
 CICFlowMeter-4.0/
+.vscode/*
+logs/*
