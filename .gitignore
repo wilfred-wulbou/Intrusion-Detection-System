@@ -1,5 +1,5 @@
 *__pycache__*
 *.bak
 *settings.json
-.vscode/*
+.vscode/
 logs/*
