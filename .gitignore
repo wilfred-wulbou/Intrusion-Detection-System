@@ -5,3 +5,4 @@
 logs/*
 *.csv
 *.log
+CICFlowMeter-4.0/bin/logs/*
