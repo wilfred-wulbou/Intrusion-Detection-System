@@ -7,7 +7,7 @@ from subprocess import Popen
 import pandas as pd
 from flow_loader.csv_flow_loader import CSVFlowLoader
 from mlengine import MLEngine
-from output.logfile_generator import OutputGenerator
+# from output.logfile_generator import OutputGenerator
 from prepare_dumps import dump_pipeline
 from preprocessing import constants
 from preprocessing.constants import PredictLabel
