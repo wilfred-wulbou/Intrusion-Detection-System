@@ -13,7 +13,10 @@ After the script runs, CICFlowMeter will also start, click on 'Load' to load the
 
 ## Requirements
 Java SE Runtime\
-Python 3.5
+Python 3.5\
+Scikit-Learn 0.21.2\
+Panda 0.24.2 \
+Numpy 1.16.4
 
 ## Acknowledgements
 ### CICFlowMeter

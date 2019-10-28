@@ -1,0 +1,43 @@
+trainingInput:
+  scaleTier: CUSTOM
+  masterType: complex_model_s
+  # workerType: complex_model_m
+  # parameterServerType: large_model
+  # workerCount: 9
+  # parameterServerCount: 3
+  hyperparameters:
+    goal: MAXIMIZE
+    hyperparameterMetricTag: f1_score
+    maxTrials: 30
+    maxParallelTrials: 1
+    enableTrialEarlyStopping: True
+    params:
+    - parameterName: nu
+      type: DOUBLE
+      minValue: 0.001
+      maxValue: 0.005
+      scaleType: UNIT_LINEAR_SCALE
+    - parameterName: gamma
+      type: DOUBLE
+      minValue: 0.001
+      maxValue: 0.005
+      scaleType: UNIT_LINEAR_SCALE
+
+    # - parameterName: nu
+    #   type: DISCRETE
+    #   discreteValues:
+    #   - 0.001
+    #   - 0.005
+    # - parameterName: gamma
+    #   type: DISCRETE
+    #   discreteValues:
+    #   - 0.001
+    #   - 0.005
+    # - parameterName: rnnCellType
+    #   type: CATEGORICAL
+    #   categoricalValues:
+    #   - BasicLSTMCell
+    #   - BasicRNNCell
+    #   - GRUCell
+    #   - LSTMCell
+    #   - LayerNormBasicLSTMCell

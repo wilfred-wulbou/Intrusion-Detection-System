@@ -17,7 +17,7 @@ class TestMLEngine(unittest.TestCase):
         prep_inputData = pd.DataFrame(inputData, columns=columns)
         prediction = mlengine.predict(prep_inputData)
         # print(prediction)
-        self.assertEquals(prediction, [1])
+        self.assertEquals(prediction, [-1])
 
 # if __name__ == '__main__':
 #     unittest.main()

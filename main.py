@@ -14,19 +14,23 @@ from preprocessing.constants import PredictLabel
 
 CSVFILEPATH = "CICFlowMeter-4.0\\bin\\data\\daily"
 csvfilename = ""
-mlengine_model_filename = "ml_models\\svm_clf_model.joblib"
+DATACLEAN_PIPELINE_FILEPATH = "preprocessing/joblib_dumps/dataclean_pipeline.joblib"
+DATAPREP_PIPELINE_FILEPATH = "preprocessing/joblib_dumps/dataprep_pipeline.joblib"
+# MODEL_FILEPATH = "ml_models/svm_clf_model.joblib" 
+MODEL_FILEPATH = "ml_models/svm_clf_model_20191016_182601_svm_clf_model.joblib"
 output_filename = "prediction_log.txt"
 columns = constants.COLUMNS
 
 def runIDS(verbose=False):
     print("Starting IDS...")
     try:
+        # Create log file if it does not exist.
         if not os.path.exists(r'logs\idslogs\ids.log'):
             file = open(os.path.join(r'logs\idslogs','ids.log'), 'w')
             file.close()
         logging.basicConfig(filename=os.path.join(r'logs\idslogs','ids.log'), level=logging.INFO)
         csvloader = CSVFlowLoader(os.path.join(CSVFILEPATH, csvfilename))
-        mlengine = MLEngine(mlengine_model_filename)
+        mlengine = MLEngine(MODEL_FILEPATH, DATACLEAN_PIPELINE_FILEPATH, DATAPREP_PIPELINE_FILEPATH)
         # output_gen = OutputGenerator(output_filename)
         while True:
             for flowline in csvloader.tailFile():
@@ -71,7 +75,6 @@ def startup():
         file.close()
     # Start CICFlowMeter
     p = Popen(os.path.join(curdirname, r"CICFlowMeter-4.0\bin\startIDS.bat"), stdout=subprocess.PIPE)
-
 if __name__ == "__main__":
     startup()
     runIDS(verbose=True)

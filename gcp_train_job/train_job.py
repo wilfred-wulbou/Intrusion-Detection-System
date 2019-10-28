@@ -1,14 +1,20 @@
-# This file is for training on AI Platform with scikit-learn.
+## Train Job 2
 
-# [START setup]
-import os
-import sys
-import subprocess
-import datetime
+# Fill in your Cloud Storage bucket name
+BUCKET_NAME = 'ids_data_bucket2'
+cloud_data_dir = 'gs://ids_data_bucket2/ids_datasets'
+# local_dir = 'D:\CIC-IDS-2017\TrafficLabelling'
+local_dir = "./public_html/ids_dataset/TrafficLabelling/"
+iscx_filename = "Monday-WorkingHours.pcap_ISCX.csv"
+
 import pandas as pd
 import sklearn
 import numpy as np
 import joblib
+import sys
+import subprocess
+import datetime
+import os
 from sklearn.model_selection import train_test_split
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
@@ -38,51 +44,6 @@ columns = ['Flow ID', 'Src IP', 'Src Port', 'Dst IP', 'Dst Port', 'Protocol',
        'Init Fwd Win Byts', 'Init Bwd Win Byts', 'Fwd Act Data Pkts',
        'Fwd Seg Size Min', 'Active Mean', 'Active Std', 'Active Max',
        'Active Min', 'Idle Mean', 'Idle Std', 'Idle Max', 'Idle Min', 'Label'] 
-
-# Fill in your Cloud Storage bucket name
-BUCKET_NAME = 'ids_data_bucket2'
-data_dir = 'gs://ids_data_bucket2/ids_datasets'
-iris_data_filename = "Monday-WorkingHours.pcap_ISCX.csv"
-
-# Switch for either local train or cloud ml enginne train.
-localTrain = True
-
-# [START load-into-pandas]
-# iris_data_filename = 'iris_data.csv'
-# iris_target_filename = 'iris_target.csv'
-
-## Download dataset files from google storage bucket.
-def downloadDatasets():
-    # gsutil outputs everything to stderr so we need to divert it to stdout.
-    subprocess.check_call(['gsutil', 'cp', os.path.join(data_dir,
-                                                        iris_data_filename),
-                        iris_data_filename], stderr=sys.stdout)
-## Load the IDS Monday Data data
-def load_iscx_data(csvfilename):
-    return pd.read_csv(csvfilename)
-
-def loadData():
-    if localTrain:
-        return load_iscx_data(os.path.join('D:\CIC-IDS-2017\TrafficLabelling', iris_data_filename))
-    else:
-        downloadDatasets()
-        return load_iscx_data(iris_data_filename)
-
-# Downloade datasets from Cloud Storage bucket and load them.
-dataset = loadData()
-# test_dataset = load_iscx_data(csvfilename="Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv")
-
-# Prepare dataset to match CIC-FlowMeter generated dataset
-def prepToCICFormat(df):
-    dataframe = df.drop(" Fwd Header Length.1", axis=1)
-    dataframe.columns = columns
-    return dataframe
-
-dataset = prepToCICFormat(dataset)
-# [END load-into-pandas]
-
-# [START train-and-save-model]
-train_set, test_set = train_test_split(dataset, test_size=0.8, random_state=42)
 
 # Data Preprocessing
 class AttributesRemover(BaseEstimator, TransformerMixin):
@@ -135,48 +96,141 @@ class BenignLabelEncoder(TransformerMixin):
         return self
     def transform(self, X, y=None):
         return ((X * 0) + 1)
-    
-# Prepare IDS Dataset   
-dataclean_pipeline = Pipeline([
-    ('data_cleaner', CustomDataCleaner()),
-])
 
-prepdata_pipeline = Pipeline([
-    ('attribs_remover', AttributesRemover()),
-    ('standard_scaler', StandardScaler()),
-])
+class DatasetProperties(object):
+    def __init__(self, data_dir, filename, bucket_name=None, *args):
+        # Fill in your Cloud Storage bucket name
+        self.bucket_name = bucket_name
+        self.dir = data_dir
+        self.filename = filename
+        self.dataset = None
 
-ids_label_pipeline = Pipeline([
-    ('label_encoder', MyLabelEncoder()),
-    ('benign_encoder', BenignLabelEncoder()),
-])
+class TrainTask(object):
+    def __init__(self, datasetprop, localTrain):
+        self.datasetprop = datasetprop
+        self.localTrain = localTrain
+        
+    def create_train_test_df(self, dataframe, test_size=0.2):
+        train_set, test_set = train_test_split(dataframe, test_size=test_size, random_state=42)
+        return train_set, test_set
 
-ids = train_set.copy()
-ids = dataclean_pipeline.fit_transform(ids)
-ids_label = ids["Label"].copy()
+    ## Download dataset files from google storage bucket.
+    def downloadDatasets(self, data_dir, filename):
+        subprocess.check_call(
+            ['gsutil', 'cp', os.path.join(data_dir,filename),filename], 
+            stderr=sys.stdout)
 
-ids_tf = prepdata_pipeline.fit_transform(ids)
-ids_label_enc = ids_label_pipeline.fit_transform(ids_label)
+    # Prepare dataset to match CIC-FlowMeter generated dataset
+    def prepToCICFormat(self, df):
+        dataframe = df.drop(" Fwd Header Length.1", axis=1)
+        dataframe.columns = columns
+        return dataframe
 
-# Fitting the data
-svm_clf = OneClassSVM(gamma = 0.001, kernel = 'rbf', nu=0.001)
-svm_clf.fit(ids_tf)
+    def loadDatasets(self, data_dir, filename, localTrain=False):
+        if localTrain:
+            raw_dataset =  pd.read_csv(os.path.join(data_dir, filename))
+            return self.prepToCICFormat(raw_dataset)
+        else:
+            self.downloadDatasets(data_dir, filename)
+            raw_dataset = pd.read_csv(filename)
+            return self.prepToCICFormat(raw_dataset)
 
-# Save Monday dataset trained model
-model_filename = "svm_clf_model.joblib"
-joblib.dump(svm_clf, model_filename)
+    def train_and_evaluate(self):
+        data_dir = self.datasetprop.dir
+        filename = self.datasetprop.filename
+        self.dataset = self.loadDatasets(data_dir, filename, self.localTrain)
+        # train_set, test_set = self.create_train_test_df(self.dataset)
+        train_set = self.dataset # using te full dataset
 
-# [END train-and-save-model]
+        # Prepare IDS Dataset   
+        dataclean_pipeline = Pipeline([
+            ('data_cleaner', CustomDataCleaner()),
+        ])
 
-# [START upload-model]
-def uploadDatasets():
-    # Upload the saved model file to Cloud Storage
-    gcs_model_path = os.path.join('gs://', BUCKET_NAME,
-        datetime.datetime.now().strftime('ids_svm_%Y%m%d_%H%M%S'), model_filename)
-    subprocess.check_call(['gsutil', 'cp', model_filename, gcs_model_path],
-        stderr=sys.stdout)
+        prepdata_pipeline = Pipeline([
+            ('attribs_remover', AttributesRemover()),
+            ('standard_scaler', StandardScaler()),
+        ])
 
-# Upload saved  model
-if localTrain == False:
-    uploadDatasets()
-# [END upload-model]
+        ids_label_pipeline = Pipeline([
+            ('label_encoder', MyLabelEncoder()),
+            ('benign_encoder', BenignLabelEncoder()),
+        ])
+        
+        train_x = train_set.copy()
+        train_x = dataclean_pipeline.fit_transform(train_x)
+        train_y = train_x["Label"].copy()
+
+        train_x_prepared = prepdata_pipeline.fit_transform(train_x)
+        train_y_prepared = ids_label_pipeline.fit_transform(train_y)
+
+        # test_x = test_set.copy()
+        # test_x = dataclean_pipeline.transform(test_x)
+        # test_y = test_x["Label"].copy()
+
+        # test_x_prepared = prepdata_pipeline.transform(test_x)
+        # test_y_prepared = ids_label_pipeline.transform(test_y)
+
+        # PredefinedSplit
+        # my_test_fold = []
+        # for _ in range(len(cleanset_prepared)):
+        #     my_test_fold.append(-1)
+        # for _ in range(len(anomalyset_prepared)):
+        #     my_test_fold.append(0)
+            
+        # param_grid = [{'gamma': [0.05,0.1,0.2,0.001,0.02,0.03], 
+        #             'kernel': ['rbf',], 
+        #             'nu':[0.01,0.05,0.1,0.03,0.3,0.07]
+        #             }]
+        # estimator = OneClassSVM()
+
+        # grid_search = GridSearchCV(estimator, 
+        #                         param_grid, 
+        #                         cv=PredefinedSplit(test_fold=my_test_fold),
+        #                         scoring='f1_micro'
+        #                         )
+        # grid_search.fit(np.concatenate((cleanset_prepared,anomalyset_prepared),axis=0), 
+        #                 np.concatenate((cleanset_label_prepared,anomalyset_label_prepared),axis=0)
+        #             )
+
+        # Print the cv scores.
+        # cvres = grid_search.cv_results_
+        # for mean_score, params in zip(cvres["mean_test_score"], cvres["params"]):
+        #     print(mean_score, params)
+
+        # return grid_search
+        estimator = OneClassSVM(gamma=0.2, kernel='rbf', nu=0.07)
+
+        # estimator = OneClassSVM(gamma=0.001, kernel='rbf', nu=0.001) # hyperparams are for test purpose 
+        estimator.fit(train_x_prepared)
+        return estimator
+
+    def save_model(self, model):
+        # Save Monday dataset trained model
+        model_filename = "svm_clf_model.joblib"
+        joblib.dump(model, model_filename)
+
+        if not self.localTrain:
+            # Upload the saved model file to Cloud Storage
+            gcs_model_path = os.path.join('gs://', BUCKET_NAME,
+                datetime.datetime.now().strftime('svm_clf_model_%Y%m%d_%H%M%S'), model_filename)
+            subprocess.check_call(['gsutil', 'cp', model_filename, gcs_model_path],
+                stderr=sys.stdout)
+
+
+if __name__ == "__main__":
+    # Train locally on machine
+    localTrain = False
+    data_dir = ""
+    if localTrain:
+        print("LocalTrain == True")
+        data_dir = local_dir
+    else:
+        print("LocalTrain == False")
+        data_dir = cloud_data_dir
+
+    task = TrainTask(DatasetProperties(data_dir,iscx_filename,BUCKET_NAME),localTrain=localTrain)
+    model = task.train_and_evaluate()
+
+    # Saved the grid search model
+    task.save_model(model)
