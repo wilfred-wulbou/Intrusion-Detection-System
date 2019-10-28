@@ -11,11 +11,10 @@ from prepare_dumps import dump_pipeline
 from preprocessing import constants
 from preprocessing.constants import PredictLabel
 
-CSVFILEPATH = "CICFlowMeter-4.0\\bin\\data\\daily"
+CSVFILEPATH = "CICFlowMeter-4.0/bin/data/daily"
 csvfilename = ""
 DATACLEAN_PIPELINE_FILEPATH = "preprocessing/joblib_dumps/dataclean_pipeline.joblib"
 DATAPREP_PIPELINE_FILEPATH = "preprocessing/joblib_dumps/dataprep_pipeline.joblib"
-# MODEL_FILEPATH = "ml_models/svm_clf_model.joblib" 
 MODEL_FILEPATH = "ml_models/svm_clf_model_20191016_182601_svm_clf_model.joblib"
 output_filename = "prediction_log.txt"
 columns = constants.COLUMNS
@@ -30,7 +29,6 @@ def runIDS(verbose=False):
         logging.basicConfig(filename=os.path.join(r'logs\idslogs','ids.log'), level=logging.INFO)
         csvloader = CSVFlowLoader(os.path.join(CSVFILEPATH, csvfilename))
         mlengine = MLEngine(MODEL_FILEPATH, DATACLEAN_PIPELINE_FILEPATH, DATAPREP_PIPELINE_FILEPATH)
-        # output_gen = OutputGenerator(output_filename)
         while True:
             for flowline in csvloader.tailFile():
                 csValsArray = [list(flowline.split(","))]
