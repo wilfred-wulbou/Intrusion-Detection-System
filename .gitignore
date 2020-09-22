@@ -8,3 +8,4 @@ logs/*
 CICFlowMeter-4.0/bin/logs/*
 CICFlowMeter-4.0/bin/logs/debug
 CICFlowMeter-4.0/bin/logs/info.log
+env/*

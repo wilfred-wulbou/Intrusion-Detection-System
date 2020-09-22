@@ -5,18 +5,27 @@ Machine learning based Intrusion Detection System (IDS)
 ## Description
 A machine learning-based Intrusion Detection System for detecting network intrusions. Based on Scikit-Learn's [Novelty](https://scikit-learn.org/stable/modules/outlier_detection.html) Detection algorithms of One-Class SVM and Local Outlier Factor (LOF).
 
+## Requirements
+Java SE Runtime Environment 1.8\
+Python 3.6\
+Scikit-Learn 0.21.2\
+Pandas 0.24.2 \
+
 ## Usage
+Install the required packages and dependencies with
+
+```cmd
+pip install -r requirements.txt
+```
+
+Then run the IDS using 
+
 ```cmd
 python main.py
 ```
 After the script runs, CICFlowMeter will also start, click on 'Load' to load the interfaces, then click 'Start' to start the capture and generation of flows.
 
-## Requirements
-Java SE Runtime\
-Python 3.5\
-Scikit-Learn 0.21.2\
-Panda 0.24.2 \
-Numpy 1.16.4
+
 
 ## Acknowledgements
 ### CICFlowMeter
